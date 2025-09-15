@@ -304,4 +304,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 [Website](https://fantasy-vault-trade.vercel.app) • [Documentation](https://docs.fantasy-vault-trade.com) • [Discord](https://discord.gg/fantasy-vault-trade) • [Twitter](https://twitter.com/FantasyVaultTrade)
 
-</div>
+</div># Enhanced privacy features
