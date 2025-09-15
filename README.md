@@ -8,14 +8,14 @@ Transform your trading experience with the world's first **Fully Homomorphic Enc
 
 **Traditional trading platforms expose your data. We protect it.**
 
-- 🔒 **Zero-Knowledge Trading**: Your orders are encrypted before they even leave your device
-- 🛡️ **FHE-Powered Privacy**: Advanced cryptography ensures your data stays private
+- 🔐 **Zero-Knowledge Trading**: Your orders are encrypted before they even leave your device
+- 🧬 **FHE-Powered Privacy**: Advanced cryptography ensures your data stays private
 - ⚡ **Lightning Fast**: Built on modern Web3 infrastructure for instant execution
 - 🎮 **Gamified Experience**: Compete in private tournaments without revealing your edge
 
 ## 🚀 Core Features
 
-### 🔐 **Military-Grade Privacy**
+### 🧬 **Military-Grade Privacy**
 ```
 Your Data → FHE Encryption → Blockchain → Decryption (Only You)
 ```
@@ -64,7 +64,7 @@ Your Data → FHE Encryption → Blockchain → Decryption (Only You)
 
 ## 🏗️ System Architecture
 
-### 🔐 **Privacy-First Design**
+### 🧬 **Privacy-First Design**
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   User Device   │    │   FHE Network    │    │   Blockchain    │
@@ -86,7 +86,7 @@ fantasy-vault-trade/
 │   ├── components/         # UI components
 │   ├── hooks/             # React hooks
 │   ├── lib/               # Core utilities
-│   │   ├── fhe-utils.ts   # 🔐 FHE encryption
+│   │   ├── fhe-utils.ts   # 🧬 FHE encryption
 │   │   ├── contract-utils.ts # ⛓️ Blockchain interaction
 │   │   └── wallet-config.ts  # 💳 Wallet setup
 │   ├── pages/             # Application pages
@@ -161,20 +161,20 @@ graph LR
 - **Private Results**: Your performance remains confidential
 - **Verifiable Proofs**: Prove your success without revealing data
 
-## 🔒 Privacy Deep Dive
+## 🧬 Privacy Deep Dive
 
 ### **What We Encrypt:**
-- ✅ Order quantities and prices
-- ✅ Portfolio values and P&L
-- ✅ Trading strategies and patterns
-- ✅ Leaderboard positions
-- ✅ Session statistics
+- 🔒 Order quantities and prices
+- 💰 Portfolio values and P&L
+- 🎯 Trading strategies and patterns
+- 🏆 Leaderboard positions
+- 📊 Session statistics
 
 ### **What Stays Public:**
-- ✅ Session creation and end times
-- ✅ Stock symbols and names
-- ✅ Network transaction hashes
-- ✅ Contract addresses
+- ⏰ Session creation and end times
+- 📈 Stock symbols and names
+- 🔗 Network transaction hashes
+- 📍 Contract addresses
 
 ## 🔒 Privacy & Security
 
@@ -261,7 +261,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🗺️ Roadmap to the Future
 
 ### 🎯 **Phase 1: Foundation** *(Current)*
-- [x] 🔐 FHE encryption engine
+- [x] 🧬 FHE encryption engine
 - [x] 💳 Multi-wallet integration
 - [x] 📊 Basic trading interface
 - [x] 🏆 Private leaderboards
@@ -298,7 +298,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**🔐 Built with ❤️ for the privacy-conscious trader**
+**🧬 Built with ❤️ for the privacy-conscious trader**
 
 *Fantasy Vault Trade - Where your secrets stay secret*
 

@@ -12,7 +12,7 @@ export const ENV_CONFIG = {
   RPC_URL_ALT: 'https://1rpc.io/sepolia',
   
   // Contract Configuration
-  CONTRACT_ADDRESS: '0x0000000000000000000000000000000000000000', // To be updated after deployment
+  CONTRACT_ADDRESS: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6', // FantasyVaultTrade contract on Sepolia
   
   // FHE Configuration
   FHE_NETWORK_URL: 'https://api.zama.ai',
