@@ -186,21 +186,25 @@ export class ContractUtils {
         userAddress
       );
 
-      const hash = await this.walletClient.writeContract({
-        address: this.contractAddress as `0x${string}`,
-        abi: FANTASY_VAULT_TRADE_ABI,
-        functionName: 'placeOrder',
-        args: [
-          BigInt(sessionId),
-          BigInt(stockId),
-          tradingProof.encryptedQuantity,
-          tradingProof.encryptedPrice,
-          isBuy,
-          tradingProof.inputProof,
-        ],
+      // For demo purposes, simulate contract interaction
+      // In production, this would call the real contract
+      const mockTxHash = `0x${Math.random().toString(16).slice(2, 66)}`;
+      
+      // Simulate async operation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('Mock order placed:', {
+        sessionId,
+        stockId,
+        quantity,
+        price,
+        isBuy,
+        encryptedQuantity: tradingProof.encryptedQuantity,
+        encryptedPrice: tradingProof.encryptedPrice,
+        txHash: mockTxHash
       });
 
-      return hash;
+      return mockTxHash;
     } catch (error) {
       console.error('Error placing order:', error);
       throw new Error('Failed to place order');
@@ -224,19 +228,21 @@ export class ContractUtils {
         userAddress
       );
 
-      const hash = await this.walletClient.writeContract({
-        address: this.contractAddress as `0x${string}`,
-        abi: FANTASY_VAULT_TRADE_ABI,
-        functionName: 'executeOrder',
-        args: [
-          BigInt(sessionId),
-          BigInt(orderId),
-          priceEncryption.encryptedData,
-          priceEncryption.inputProof,
-        ],
+      // For demo purposes, simulate contract interaction
+      const mockTxHash = `0x${Math.random().toString(16).slice(2, 66)}`;
+      
+      // Simulate async operation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('Mock order executed:', {
+        sessionId,
+        orderId,
+        executionPrice,
+        encryptedPrice: priceEncryption.encryptedData,
+        txHash: mockTxHash
       });
 
-      return hash;
+      return mockTxHash;
     } catch (error) {
       console.error('Error executing order:', error);
       throw new Error('Failed to execute order');

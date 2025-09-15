@@ -1,11 +1,44 @@
-import { createFhevmInstance } from 'fhevmjs';
+// Mock FHE implementation for demo purposes
+// In production, this would use the real fhevmjs library
 
 export class FHEUtils {
   private static instance: any = null;
 
   static async getInstance() {
     if (!this.instance) {
-      this.instance = await createFhevmInstance();
+      // Mock FHE instance for demo
+      this.instance = {
+        encrypt32: (value: number) => {
+          // Simple mock encryption - in production this would be real FHE
+          const buffer = new ArrayBuffer(32);
+          const view = new DataView(buffer);
+          view.setUint32(0, value, true);
+          const encrypted = new Uint8Array(buffer);
+          for (let i = 0; i < encrypted.length; i++) {
+            encrypted[i] = encrypted[i] ^ (i + 0x42);
+          }
+          return `0x${Array.from(encrypted).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+        },
+        decrypt: (encryptedValue: string, contractAddress: string) => {
+          // Simple mock decryption
+          const hex = encryptedValue.slice(2);
+          const encrypted = new Uint8Array(hex.length / 2);
+          for (let i = 0; i < hex.length; i += 2) {
+            encrypted[i / 2] = parseInt(hex.substr(i, 2), 16);
+          }
+          for (let i = 0; i < encrypted.length; i++) {
+            encrypted[i] = encrypted[i] ^ (i + 0x42);
+          }
+          const view = new DataView(encrypted.buffer);
+          return view.getUint32(0, true);
+        },
+        getPublicKey: (contractAddress: string) => {
+          return `0x${contractAddress.slice(2)}${'0'.repeat(24)}`;
+        },
+        generateInputProof: async (data: any) => {
+          return `0x${Math.random().toString(16).slice(2, 66)}`;
+        }
+      };
     }
     return this.instance;
   }

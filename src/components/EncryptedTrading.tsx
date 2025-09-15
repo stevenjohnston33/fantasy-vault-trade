@@ -401,6 +401,24 @@ export const EncryptedTrading: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Demo Mode Notice */}
+      <Card className="border-yellow-500/20 bg-yellow-500/5">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-3">
+            <Zap className="w-5 h-5 text-yellow-600 mt-0.5" />
+            <div>
+              <h4 className="font-medium text-yellow-600 mb-1">Demo Mode</h4>
+              <p className="text-sm text-muted-foreground">
+                This is a demonstration version of the FHE-encrypted trading platform. 
+                Orders are simulated with mock encryption for demonstration purposes. 
+                In production, this would use real FHE encryption and interact with 
+                deployed smart contracts on the blockchain.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
