@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi';
 import { useZamaInstance } from '../hooks/useZamaInstance';
 import { useEthersSigner } from '../hooks/useEthersSigner';
 import { useStockData } from '../hooks/useStockData';
-import { encryptTradingOrder, decryptTradingData, testFHEFunctionality } from '../lib/fhe-trading-utils';
+import { encryptTradingOrder, decryptTradingData } from '../lib/fhe-trading-utils';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../config/contract';
 import { Contract, ethers } from 'ethers';
 
@@ -19,7 +19,6 @@ export default function EncryptedTrading() {
   const [orderType, setOrderType] = useState(1); // 1: Buy, 2: Sell
   const [submitting, setSubmitting] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
-  const [testing, setTesting] = useState(false);
   
   // 创建股票相关状态
   const [showCreateStock, setShowCreateStock] = useState(false);
@@ -45,28 +44,6 @@ export default function EncryptedTrading() {
     return selectedStock && quantity && price && !submitting && instance && address;
   }, [selectedStock, quantity, price, submitting, instance, address]);
 
-  // 测试 FHE 功能
-  const testFHE = async () => {
-    if (!instance) {
-      alert('FHE instance not ready');
-      return;
-    }
-    
-    setTesting(true);
-    try {
-      const success = await testFHEFunctionality(instance);
-      if (success) {
-        alert('✅ FHE Test Successful!');
-      } else {
-        alert('❌ FHE Test Failed!');
-      }
-    } catch (error) {
-      console.error('FHE Test Error:', error);
-      alert('❌ FHE Test Error: ' + error.message);
-    } finally {
-      setTesting(false);
-    }
-  };
 
   // 提交加密交易订单
   const submitOrder = async () => {
@@ -256,13 +233,6 @@ export default function EncryptedTrading() {
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
               {stocksLoading ? 'Loading...' : 'Refresh Stocks'}
-            </button>
-            <button
-              onClick={testFHE}
-              disabled={testing || !instance}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-            >
-              {testing ? 'Testing...' : 'Test FHE'}
             </button>
           </div>
         </div>
