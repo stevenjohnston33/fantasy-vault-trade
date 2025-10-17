@@ -175,7 +175,8 @@ export default function EncryptedTrading() {
       const signer = await getSigner();
       const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
       
-      // 转换价格和供应量为正确的格式
+      // Convert price and supply to correct format for simulation
+      // For simulation, we'll use the USD price directly (multiply by 1e18 for wei format)
       const priceInWei = ethers.parseEther(newStockPrice);
       const supply = BigInt(newStockSupply);
       
@@ -184,7 +185,7 @@ export default function EncryptedTrading() {
         newStockName,
         priceInWei,
         supply,
-        "0x" // 空的 proof，用于初始化
+        "0x" // Empty proof for initialization
       );
       
       console.log('⏳ Waiting for transaction confirmation...');
@@ -308,7 +309,7 @@ export default function EncryptedTrading() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Initial Price (ETH)
+                  Initial Price (USD)
                 </label>
                 <input
                   type="number"

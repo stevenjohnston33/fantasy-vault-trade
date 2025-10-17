@@ -58,8 +58,9 @@ export function useStockData() {
           console.log(`🔄 Fetching data for stock: ${symbol}`);
           const stockInfo = await contract.getStockInfo(symbol);
           
-          // Generate realistic price data with some randomness
-          const basePrice = parseFloat(stockInfo[2].toString()) / 1e18; // Convert from wei
+          // Generate realistic USD price data with some randomness
+          // Use the contract price as base USD price (no wei conversion needed for simulation)
+          const basePrice = parseFloat(stockInfo[2].toString()) / 1e18; // Convert from wei to get base price
           const priceVariation = (Math.random() - 0.5) * 0.1; // ±5% variation
           const currentPrice = (basePrice * (1 + priceVariation)).toFixed(2);
           

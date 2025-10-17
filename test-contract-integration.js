@@ -21,7 +21,7 @@ async function main() {
     try {
       const stockInfo = await contract.getStockInfo(symbol);
       console.log(`  - Name: ${stockInfo[1]}`);
-      console.log(`  - Price: ${ethers.formatEther(stockInfo[2])} ETH`);
+      console.log(`  - Price: $${ethers.formatEther(stockInfo[2])} USD`);
       console.log(`  - Active: ${stockInfo[3]}`);
     } catch (error) {
       console.error(`  ❌ Error fetching ${symbol}:`, error.message);

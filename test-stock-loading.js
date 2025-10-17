@@ -27,7 +27,7 @@ async function testStockLoading() {
       console.log("✅ Stock info:", {
         symbol: stockInfo[0],
         name: stockInfo[1],
-        price: ethers.formatEther(stockInfo[2]),
+        price: `$${ethers.formatEther(stockInfo[2])} USD`,
         active: stockInfo[3]
       });
     }
