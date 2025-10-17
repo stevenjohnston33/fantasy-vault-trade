@@ -4,6 +4,14 @@
 
 Transform your trading experience with the world's first **Fully Homomorphic Encrypted** fantasy trading platform. Trade with complete privacy while maintaining full functionality - your strategies, orders, and portfolio remain invisible to everyone except you.
 
+## 🎬 Demo Video
+
+Watch our platform in action:
+
+[![Fantasy Vault Trade Demo](https://img.shields.io/badge/🎬%20Watch%20Demo-Video%20Demo-blue?style=for-the-badge)](./secret-stock-trade-compressed.mp4)
+
+*Experience FHE-encrypted trading with complete privacy protection*
+
 ## 🎯 Why Fantasy Vault Trade?
 
 **Traditional trading platforms expose your data. We protect it.**
@@ -98,6 +106,8 @@ fantasy-vault-trade/
 ## 🚀 Quick Start Guide
 
 ### ⚡ **Get Started in 60 Seconds**
+
+> **📺 [Watch the Demo Video](./secret-stock-trade-compressed.mp4)** - See the platform in action!
 
 ```bash
 # 1. Clone the repository
@@ -316,6 +326,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Ready to trade in complete privacy?**
 
+[![🎬 Watch Demo Video](./secret-stock-trade-compressed.mp4)](./secret-stock-trade-compressed.mp4)
 [![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/stevenjohnston33/fantasy-vault-trade)
 [![Star on GitHub](https://img.shields.io/github/stars/stevenjohnston33/fantasy-vault-trade?style=social)](https://github.com/stevenjohnston33/fantasy-vault-trade)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/FantasyVaultTrade?style=social)](https://twitter.com/FantasyVaultTrade)
