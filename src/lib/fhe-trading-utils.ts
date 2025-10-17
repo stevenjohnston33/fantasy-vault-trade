@@ -72,21 +72,40 @@ export const encryptTradingOrder = async (
     console.log('✅ Step 1 completed: Encrypted input created');
     
     console.log('🔄 Step 2: Adding encrypted data...');
+    
+    // 验证所有值都在32位范围内
+    const max32Bit = 4294967295; // 2^32 - 1
+    
     console.log('📊 Adding orderId:', orderData.orderId);
+    if (orderData.orderId > max32Bit) {
+      throw new Error(`Order ID ${orderData.orderId} exceeds 32-bit limit`);
+    }
     input.add32(BigInt(orderData.orderId)); // 订单ID
     
     console.log('📊 Adding orderType:', orderData.orderType);
+    if (orderData.orderType > max32Bit) {
+      throw new Error(`Order type ${orderData.orderType} exceeds 32-bit limit`);
+    }
     input.add32(BigInt(orderData.orderType)); // 订单类型
     
     console.log('📊 Adding quantity:', orderData.quantity);
+    if (orderData.quantity > max32Bit) {
+      throw new Error(`Quantity ${orderData.quantity} exceeds 32-bit limit`);
+    }
     input.add32(BigInt(orderData.quantity)); // 数量
     
     const priceInCents = Math.floor(orderData.price * 100);
     console.log('📊 Adding price (in cents):', priceInCents);
+    if (priceInCents > max32Bit) {
+      throw new Error(`Price ${priceInCents} exceeds 32-bit limit`);
+    }
     input.add32(BigInt(priceInCents)); // 价格 (转换为整数)
     
     const stockSymbolValue = getStringValue(orderData.stockSymbol);
     console.log('📊 Adding stockSymbol (converted):', stockSymbolValue);
+    if (stockSymbolValue > max32Bit) {
+      throw new Error(`Stock symbol value ${stockSymbolValue} exceeds 32-bit limit`);
+    }
     input.add32(BigInt(stockSymbolValue)); // 股票代码
     
     console.log('✅ Step 2 completed: All data added to encrypted input');
@@ -104,7 +123,7 @@ export const encryptTradingOrder = async (
     });
     
     const proof = `0x${Array.from(encryptedInput.inputProof)
-      .map(b => b.toString(16).padStart(2, '0')).join('')}`;
+      .map((b: number) => b.toString(16).padStart(2, '0')).join('')}`;
     console.log('📊 Proof length:', proof.length);
     
     console.log('🎉 Encryption completed successfully!');
@@ -220,7 +239,7 @@ export const encryptPortfolioData = async (
     
     const handles = encryptedInput.handles.map(convertHex);
     const proof = `0x${Array.from(encryptedInput.inputProof)
-      .map(b => b.toString(16).padStart(2, '0')).join('')}`;
+      .map((b: number) => b.toString(16).padStart(2, '0')).join('')}`;
     
     console.log('✅ Portfolio data encrypted successfully');
     return { handles, proof };
@@ -246,7 +265,6 @@ export const testFHEFunctionality = async (instance: any) => {
     // 测试加密
     const encrypted = await encryptTradingOrder(
       instance,
-      '0x0000000000000000000000000000000000000000', // 测试地址
       '0x0000000000000000000000000000000000000000', // 测试地址
       testData
     );

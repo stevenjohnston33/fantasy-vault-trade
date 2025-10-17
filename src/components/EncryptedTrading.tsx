@@ -90,7 +90,7 @@ export default function EncryptedTrading() {
         quantity: parseInt(quantity),
         price: parseFloat(price),
         orderType: orderType,
-        orderId: Date.now() // 使用时间戳作为订单ID
+        orderId: Math.floor(Math.random() * 1000000) // 使用随机数作为订单ID，确保在32位范围内
       };
       
       // 加密订单数据
