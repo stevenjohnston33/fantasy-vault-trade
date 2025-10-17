@@ -68,7 +68,7 @@ contract FantasyVaultTradeV2 is SepoliaConfig {
         uint256 _initialPrice,
         uint256 _totalSupply,
         bytes calldata inputProof
-    ) external onlyOwner {
+    ) external {
         require(bytes(_symbol).length > 0, "Symbol cannot be empty");
         require(_initialPrice > 0, "Price must be positive");
         

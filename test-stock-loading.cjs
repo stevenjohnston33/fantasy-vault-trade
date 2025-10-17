@@ -7,7 +7,7 @@ async function testStockLoading() {
   try {
     // Use public RPC endpoint to test contract connection
     const provider = new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
-    const contractAddress = "0xd07Df04833AC66C480c6844955E34F54af475030";
+    const contractAddress = "0xb420eecda221E7BbbdEa4383CFef5eef68c2ddf3";
     
     // Simplified ABI with only the methods we need
     const contractABI = [

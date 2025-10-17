@@ -1,5 +1,5 @@
 // Contract configuration for FantasyVaultTradeV2
-export const CONTRACT_ADDRESS = '0xd07Df04833AC66C480c6844955E34F54af475030';
+export const CONTRACT_ADDRESS = '0xb420eecda221E7BbbdEa4383CFef5eef68c2ddf3';
 export const CONTRACT_ABI = [
   {
     "inputs": [],
@@ -48,9 +48,9 @@ export const CONTRACT_ABI = [
     ],
     "name": "getPortfolioValue",
     "outputs": [
-      {"name": "", "type": "euint64"},
-      {"name": "", "type": "euint64"},
-      {"name": "", "type": "euint32"}
+      {"name": "", "type": "bytes32"},
+      {"name": "", "type": "bytes32"},
+      {"name": "", "type": "bytes32"}
     ],
     "stateMutability": "view",
     "type": "function"
@@ -73,11 +73,11 @@ export const CONTRACT_ABI = [
     ],
     "name": "getOrderEncryptedData",
     "outputs": [
-      {"name": "", "type": "euint32"},
-      {"name": "", "type": "euint32"},
-      {"name": "", "type": "euint32"},
-      {"name": "", "type": "euint32"},
-      {"name": "", "type": "euint32"}
+      {"name": "", "type": "bytes32"},
+      {"name": "", "type": "bytes32"},
+      {"name": "", "type": "bytes32"},
+      {"name": "", "type": "bytes32"},
+      {"name": "", "type": "bytes32"}
     ],
     "stateMutability": "view",
     "type": "function"
@@ -152,8 +152,8 @@ export const CONTRACT_ABI = [
       {"name": "symbol", "type": "string"},
       {"name": "name", "type": "string"},
       {"name": "currentPrice", "type": "uint256"},
-      {"name": "totalSupply", "type": "euint64"},
-      {"name": "marketCap", "type": "euint64"},
+      {"name": "totalSupply", "type": "bytes32"},
+      {"name": "marketCap", "type": "bytes32"},
       {"name": "isActive", "type": "bool"}
     ],
     "stateMutability": "view",
@@ -166,11 +166,11 @@ export const CONTRACT_ABI = [
     "name": "orders",
     "outputs": [
       {"name": "trader", "type": "address"},
-      {"name": "orderId", "type": "euint32"},
-      {"name": "orderType", "type": "euint32"},
-      {"name": "quantity", "type": "euint32"},
-      {"name": "price", "type": "euint32"},
-      {"name": "stockSymbol", "type": "euint32"},
+      {"name": "orderId", "type": "bytes32"},
+      {"name": "orderType", "type": "bytes32"},
+      {"name": "quantity", "type": "bytes32"},
+      {"name": "price", "type": "bytes32"},
+      {"name": "stockSymbol", "type": "bytes32"},
       {"name": "isExecuted", "type": "bool"},
       {"name": "timestamp", "type": "uint256"}
     ],

@@ -4,7 +4,7 @@ async function main() {
   console.log("🧪 Testing contract integration...");
   
   // Get contract instance
-  const contractAddress = "0xd07Df04833AC66C480c6844955E34F54af475030";
+  const contractAddress = "0xb420eecda221E7BbbdEa4383CFef5eef68c2ddf3";
   const FantasyVaultTradeV2 = await ethers.getContractFactory("FantasyVaultTradeV2");
   const contract = FantasyVaultTradeV2.attach(contractAddress);
   
