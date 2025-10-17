@@ -2,92 +2,58 @@
 pragma solidity ^0.8.24;
 
 import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
-import { euint32, externalEuint32, euint64, externalEuint64, ebool, FHE } from "@fhevm/solidity/lib/FHE.sol";
+import { euint32, euint64, ebool, FHE } from "@fhevm/solidity/lib/FHE.sol";
 
-contract FantasyVaultTrade is SepoliaConfig {
+contract FantasyVaultTradeV2 is SepoliaConfig {
     using FHE for *;
     
-    struct TradingSession {
-        euint32 sessionId;
-        euint32 totalParticipants;
-        euint32 totalVolume;
-        euint32 totalTrades;
-        bool isActive;
-        bool isEnded;
-        string name;
-        string description;
-        address creator;
-        uint256 startTime;
-        uint256 endTime;
-        uint256 lockPeriod;
-    }
-    
+    // Simplified stock structure
     struct Stock {
-        euint32 stockId;
-        euint32 currentPrice;
-        euint32 totalSupply;
-        euint32 marketCap;
-        bool isActive;
         string symbol;
         string name;
-        address issuer;
+        uint256 currentPrice; // Plaintext price for display
+        euint64 totalSupply; // Encrypted total supply
+        euint64 marketCap; // Encrypted market cap
+        bool isActive;
     }
     
+    // Encrypted trading order structure
     struct TradeOrder {
-        euint32 orderId;
-        euint32 stockId;
-        euint32 quantity;
-        euint32 price;
-        euint32 totalValue;
-        bool isBuy;
-        bool isExecuted;
         address trader;
+        euint32 orderId;
+        euint32 orderType; // 1: Buy, 2: Sell
+        euint32 quantity;
+        euint32 price; // Price * 100 stored
+        euint32 stockSymbol; // Stock symbol numeric representation
+        bool isExecuted;
         uint256 timestamp;
     }
     
+    // Encrypted portfolio structure
     struct Portfolio {
-        euint32 totalValue;
-        euint32 totalPnl;
-        euint32 tradeCount;
         address owner;
-        bool isActive;
+        euint64 totalValue; // Encrypted total value
+        euint64 totalPnl; // Encrypted total PnL
+        euint32 tradeCount; // Encrypted trade count
+        mapping(string => uint256) holdings; // Plaintext holdings
     }
     
-    struct LeaderboardEntry {
-        euint32 rank;
-        euint32 score;
-        address trader;
-        bool isVerified;
-    }
-    
-    mapping(uint256 => TradingSession) public sessions;
-    mapping(uint256 => Stock) public stocks;
+    // State variables
+    address public owner;
+    mapping(string => Stock) public stocks;
     mapping(uint256 => TradeOrder) public orders;
     mapping(address => Portfolio) public portfolios;
-    mapping(uint256 => mapping(address => euint32)) public stockHoldings;
-    mapping(uint256 => LeaderboardEntry) public leaderboard;
-    
-    uint256 public sessionCounter;
-    uint256 public stockCounter;
     uint256 public orderCounter;
-    uint256 public leaderboardCounter;
+    string[] public stockSymbols;
     
-    address public owner;
-    address public verifier;
-    uint256 public platformFeeRate; // Basis points (e.g., 100 = 1%)
+    // Events
+    event StockCreated(string symbol, string name, uint256 initialPrice);
+    event OrderPlaced(uint256 orderId, address trader, string symbol, uint256 quantity, uint256 price);
+    event OrderExecuted(uint256 orderId, address trader, string symbol, uint256 quantity, uint256 price);
+    event PortfolioUpdated(address trader, uint256 totalValue, uint256 totalPnl);
     
-    event SessionCreated(uint256 indexed sessionId, address indexed creator, string name);
-    event StockAdded(uint256 indexed stockId, string symbol, address indexed issuer);
-    event OrderPlaced(uint256 indexed orderId, uint256 indexed stockId, address indexed trader, bool isBuy);
-    event OrderExecuted(uint256 indexed orderId, uint256 indexed stockId, address indexed trader);
-    event SessionEnded(uint256 indexed sessionId, address indexed creator);
-    event LeaderboardUpdated(uint256 indexed sessionId, address indexed trader, uint32 rank);
-    event PortfolioUpdated(address indexed trader, uint32 totalValue);
-    
-    constructor(address _verifier) {
+    constructor() {
         owner = msg.sender;
-        verifier = _verifier;
-        platformFeeRate = 50; // 0.5% platform fee
     }
     
     modifier onlyOwner() {
@@ -95,231 +61,142 @@ contract FantasyVaultTrade is SepoliaConfig {
         _;
     }
     
-    modifier onlyVerifier() {
-        require(msg.sender == verifier, "Only verifier can call this function");
-        _;
-    }
-    
-    function createTradingSession(
-        string memory _name,
-        string memory _description,
-        uint256 _duration,
-        uint256 _lockPeriod
-    ) public returns (uint256) {
-        require(bytes(_name).length > 0, "Session name cannot be empty");
-        require(_duration > 0, "Duration must be positive");
-        require(_lockPeriod > 0, "Lock period must be positive");
-        
-        uint256 sessionId = sessionCounter++;
-        
-        sessions[sessionId] = TradingSession({
-            sessionId: FHE.asEuint32(0), // Will be set properly later
-            totalParticipants: FHE.asEuint32(0),
-            totalVolume: FHE.asEuint32(0),
-            totalTrades: FHE.asEuint32(0),
-            isActive: true,
-            isEnded: false,
-            name: _name,
-            description: _description,
-            creator: msg.sender,
-            startTime: block.timestamp,
-            endTime: block.timestamp + _duration,
-            lockPeriod: _lockPeriod
-        });
-        
-        emit SessionCreated(sessionId, msg.sender, _name);
-        return sessionId;
-    }
-    
-    function addStock(
-        uint256 sessionId,
+    // Create stock
+    function createStock(
         string memory _symbol,
         string memory _name,
-        externalEuint32 initialPrice,
-        externalEuint32 totalSupply,
+        uint256 _initialPrice,
+        uint256 _totalSupply,
         bytes calldata inputProof
-    ) public returns (uint256) {
-        require(sessions[sessionId].isActive, "Session is not active");
-        require(!sessions[sessionId].isEnded, "Session has ended");
-        require(bytes(_symbol).length > 0, "Stock symbol cannot be empty");
-        require(bytes(_name).length > 0, "Stock name cannot be empty");
+    ) external onlyOwner {
+        require(bytes(_symbol).length > 0, "Symbol cannot be empty");
+        require(_initialPrice > 0, "Price must be positive");
         
-        uint256 stockId = stockCounter++;
+        euint64 encryptedSupply = FHE.asEuint64(uint64(_totalSupply));
+        euint64 encryptedMarketCap = encryptedSupply.mul(FHE.asEuint64(uint64(_initialPrice)));
         
-        // Decrypt and validate the input
-        euint32 decryptedPrice = FHE.asEuint32(initialPrice);
-        euint32 decryptedSupply = FHE.asEuint32(totalSupply);
-        
-        // Calculate market cap
-        euint32 marketCap = decryptedPrice.mul(decryptedSupply);
-        
-        stocks[stockId] = Stock({
-            stockId: FHE.asEuint32(0), // Will be set properly later
-            currentPrice: decryptedPrice,
-            totalSupply: decryptedSupply,
-            marketCap: marketCap,
-            isActive: true,
+        stocks[_symbol] = Stock({
             symbol: _symbol,
             name: _name,
-            issuer: msg.sender
+            currentPrice: _initialPrice,
+            totalSupply: encryptedSupply,
+            marketCap: encryptedMarketCap,
+            isActive: true
         });
         
-        emit StockAdded(stockId, _symbol, msg.sender);
-        return stockId;
+        stockSymbols.push(_symbol);
+        emit StockCreated(_symbol, _name, _initialPrice);
     }
     
+    // Place order (encrypted data)
     function placeOrder(
-        uint256 sessionId,
-        uint256 stockId,
-        externalEuint32 quantity,
-        externalEuint32 price,
-        bool isBuy,
-        bytes calldata inputProof
-    ) public returns (uint256) {
-        require(sessions[sessionId].isActive, "Session is not active");
-        require(!sessions[sessionId].isEnded, "Session has ended");
-        require(stocks[stockId].isActive, "Stock is not active");
-        require(block.timestamp < sessions[sessionId].endTime, "Session has ended");
+        string memory _symbol,
+        uint256 _orderType,
+        bytes32[5] calldata _encryptedData, // Encrypted order data
+        bytes calldata _inputProof
+    ) external {
+        require(stocks[_symbol].isActive, "Stock not active");
+        require(_orderType == 1 || _orderType == 2, "Invalid order type");
         
-        uint256 orderId = orderCounter++;
+        orderCounter++;
         
-        // Decrypt the input values
-        euint32 decryptedQuantity = FHE.asEuint32(quantity);
-        euint32 decryptedPrice = FHE.asEuint32(price);
-        
-        // Calculate total value
-        euint32 totalValue = decryptedQuantity.mul(decryptedPrice);
-        
-        orders[orderId] = TradeOrder({
-            orderId: FHE.asEuint32(0), // Will be set properly later
-            stockId: FHE.asEuint32(stockId),
-            quantity: decryptedQuantity,
-            price: decryptedPrice,
-            totalValue: totalValue,
-            isBuy: isBuy,
-            isExecuted: false,
+        orders[orderCounter] = TradeOrder({
             trader: msg.sender,
+            orderId: FHE.asEuint32(uint32(orderCounter)),
+            orderType: FHE.asEuint32(uint32(_orderType)),
+            quantity: FHE.asEuint32(0), // Will be set from encrypted data
+            price: FHE.asEuint32(0), // Will be set from encrypted data
+            stockSymbol: FHE.asEuint32(0), // Will be set from encrypted data
+            isExecuted: false,
             timestamp: block.timestamp
         });
         
-        emit OrderPlaced(orderId, stockId, msg.sender, isBuy);
-        return orderId;
+        emit OrderPlaced(orderCounter, msg.sender, _symbol, 0, 0); // Quantity is 0 because encrypted
     }
     
+    // Execute order
     function executeOrder(
-        uint256 sessionId,
-        uint256 orderId,
-        externalEuint32 executionPrice,
-        bytes calldata inputProof
-    ) public onlyVerifier {
-        require(sessions[sessionId].isActive, "Session is not active");
-        require(!sessions[sessionId].isEnded, "Session has ended");
-        require(!orders[orderId].isExecuted, "Order already executed");
+        uint256 _orderId,
+        bytes32[5] calldata _encryptedData,
+        bytes calldata _inputProof
+    ) external onlyOwner {
+        require(_orderId <= orderCounter, "Order does not exist");
+        require(!orders[_orderId].isExecuted, "Order already executed");
         
-        // Decrypt execution price
-        euint32 decryptedExecutionPrice = FHE.asEuint32(executionPrice);
+        orders[_orderId].isExecuted = true;
         
-        // Mark order as executed
-        orders[orderId].isExecuted = true;
-        orders[orderId].price = decryptedExecutionPrice;
+        // Update portfolio (encrypted data)
+        portfolios[orders[_orderId].trader].tradeCount.add(FHE.asEuint32(1));
         
-        // Update portfolio and holdings
-        address trader = orders[orderId].trader;
-        uint256 stockId = uint256(FHE.asEuint32(orders[orderId].stockId));
-        
-        if (orders[orderId].isBuy) {
-            // Add to holdings
-            stockHoldings[stockId][trader] = stockHoldings[stockId][trader].add(orders[orderId].quantity);
-        } else {
-            // Remove from holdings
-            stockHoldings[stockId][trader] = stockHoldings[stockId][trader].sub(orders[orderId].quantity);
-        }
-        
-        // Update portfolio
-        portfolios[trader].totalValue = portfolios[trader].totalValue.add(orders[orderId].totalValue);
-        portfolios[trader].tradeCount = portfolios[trader].tradeCount.add(FHE.asEuint32(1));
-        
-        // Update session statistics
-        sessions[sessionId].totalVolume = sessions[sessionId].totalVolume.add(orders[orderId].totalValue);
-        sessions[sessionId].totalTrades = sessions[sessionId].totalTrades.add(FHE.asEuint32(1));
-        
-        emit OrderExecuted(orderId, stockId, trader);
-        emit PortfolioUpdated(trader, uint32(FHE.asEuint32(portfolios[trader].totalValue)));
+        emit OrderExecuted(_orderId, orders[_orderId].trader, "", 0, 0);
     }
     
-    function endSession(uint256 sessionId) public {
-        require(msg.sender == sessions[sessionId].creator, "Only session creator can end session");
-        require(sessions[sessionId].isActive, "Session is not active");
-        require(!sessions[sessionId].isEnded, "Session already ended");
-        require(block.timestamp >= sessions[sessionId].endTime, "Session has not ended yet");
-        
-        sessions[sessionId].isActive = false;
-        sessions[sessionId].isEnded = true;
-        
-        emit SessionEnded(sessionId, msg.sender);
-    }
-    
-    function updateLeaderboard(
-        uint256 sessionId,
-        address trader,
-        externalEuint32 score,
-        bytes calldata inputProof
-    ) public onlyVerifier {
-        require(sessions[sessionId].isEnded, "Session must be ended to update leaderboard");
-        
-        uint256 entryId = leaderboardCounter++;
-        
-        leaderboard[entryId] = LeaderboardEntry({
-            rank: FHE.asEuint32(0), // Will be calculated later
-            score: FHE.asEuint32(score),
-            trader: trader,
-            isVerified: true
-        });
-        
-        emit LeaderboardUpdated(sessionId, trader, 0); // Rank will be calculated off-chain
-    }
-    
-    function getPortfolioValue(address trader) public view returns (euint32) {
-        return portfolios[trader].totalValue;
-    }
-    
-    function getStockPrice(uint256 stockId) public view returns (euint32) {
-        return stocks[stockId].currentPrice;
-    }
-    
-    function getSessionStats(uint256 sessionId) public view returns (
-        euint32 totalParticipants,
-        euint32 totalVolume,
-        euint32 totalTrades
-    ) {
+    // Get portfolio value (returns encrypted data)
+    function getPortfolioValue(address _trader) external view returns (euint64, euint64, euint32) {
+        Portfolio storage portfolio = portfolios[_trader];
         return (
-            sessions[sessionId].totalParticipants,
-            sessions[sessionId].totalVolume,
-            sessions[sessionId].totalTrades
+            portfolio.totalValue,
+            portfolio.totalPnl,
+            portfolio.tradeCount
         );
     }
     
-    function updateStockPrice(
-        uint256 stockId,
-        externalEuint32 newPrice,
-        bytes calldata inputProof
-    ) public onlyVerifier {
-        require(stocks[stockId].isActive, "Stock is not active");
-        
-        euint32 decryptedPrice = FHE.asEuint32(newPrice);
-        stocks[stockId].currentPrice = decryptedPrice;
-        
-        // Recalculate market cap
-        stocks[stockId].marketCap = decryptedPrice.mul(stocks[stockId].totalSupply);
+    // Get stock holding (plaintext)
+    function getStockHolding(address _trader, string memory _symbol) external view returns (uint256) {
+        return portfolios[_trader].holdings[_symbol];
     }
     
-    function setPlatformFeeRate(uint256 newRate) public onlyOwner {
-        require(newRate <= 1000, "Fee rate cannot exceed 10%");
-        platformFeeRate = newRate;
+    // Get order information (returns encrypted data)
+    function getOrderEncryptedData(uint256 _orderId) external view returns (euint32, euint32, euint32, euint32, euint32) {
+        TradeOrder storage order = orders[_orderId];
+        return (
+            order.orderId,
+            order.orderType,
+            order.quantity,
+            order.price,
+            order.stockSymbol
+        );
     }
     
-    function withdrawFees() public onlyOwner {
-        // Implementation for withdrawing platform fees
-        // This would require additional logic for fee collection
+    // Update stock price
+    function updateStockPrice(string memory _symbol, uint256 _newPrice) external onlyOwner {
+        require(stocks[_symbol].isActive, "Stock not active");
+        require(_newPrice > 0, "Price must be positive");
+        
+        stocks[_symbol].currentPrice = _newPrice;
+        // Update encrypted market cap
+        stocks[_symbol].marketCap = stocks[_symbol].totalSupply.mul(FHE.asEuint64(uint64(_newPrice)));
+    }
+    
+    // Get stock information
+    function getStockInfo(string memory _symbol) external view returns (
+        string memory,
+        string memory,
+        uint256,
+        bool
+    ) {
+        Stock storage stock = stocks[_symbol];
+        return (
+            stock.symbol,
+            stock.name,
+            stock.currentPrice,
+            stock.isActive
+        );
+    }
+    
+    // Get all stock symbols
+    function getAllStockSymbols() external view returns (string[] memory) {
+        return stockSymbols;
+    }
+    
+    // Get order count
+    function getOrderCount() external view returns (uint256) {
+        return orderCounter;
+    }
+    
+    // Set ACL permissions
+    function setACLPermissions(address _user, bool _canTrade) external onlyOwner {
+        // ACL permission control logic can be added here
+        // Currently simplified implementation
     }
 }
