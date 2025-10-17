@@ -15,12 +15,15 @@ export default defineConfig(() => ({
   },
   optimizeDeps: {
     include: ['@zama-fhe/relayer-sdk/bundle'],  // Pre-build FHE SDK
-    exclude: ['@rainbow-me/rainbowkit']
+    exclude: ['@rainbow-me/rainbowkit'],
+    force: true  // Force re-optimization
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "eventemitter3": "eventemitter3"  // Force consistent eventemitter3 version
     },
+    dedupe: ['eventemitter3']  // Dedupe eventemitter3 to avoid conflicts
   },
   build: {
     rollupOptions: {

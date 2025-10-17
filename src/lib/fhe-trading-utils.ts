@@ -1,4 +1,5 @@
 import { Contract } from 'ethers';
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../config/contract';
 
 // FHE Handle 转换工具
 export const convertHex = (handle: any): string => {
@@ -49,7 +50,6 @@ export const getStringDescription = (value: number): string => {
 // 加密交易订单
 export const encryptTradingOrder = async (
   instance: any,
-  contractAddress: string,
   userAddress: string,
   orderData: {
     stockSymbol: string;
@@ -60,29 +60,69 @@ export const encryptTradingOrder = async (
   }
 ) => {
   try {
-    console.log('🔄 Creating encrypted trading order...');
+    console.log('🚀 Starting FHE encryption process...');
+    console.log('📊 Input data:', {
+      contractAddress: CONTRACT_ADDRESS,
+      userAddress,
+      orderData
+    });
     
-    const input = instance.createEncryptedInput(contractAddress, userAddress);
+    console.log('🔄 Step 1: Creating encrypted input...');
+    const input = instance.createEncryptedInput(CONTRACT_ADDRESS, userAddress);
+    console.log('✅ Step 1 completed: Encrypted input created');
     
-    // 添加加密数据
+    console.log('🔄 Step 2: Adding encrypted data...');
+    console.log('📊 Adding orderId:', orderData.orderId);
     input.add32(BigInt(orderData.orderId)); // 订单ID
-    input.add8(orderData.orderType); // 订单类型
+    
+    console.log('📊 Adding orderType:', orderData.orderType);
+    input.add32(BigInt(orderData.orderType)); // 订单类型
+    
+    console.log('📊 Adding quantity:', orderData.quantity);
     input.add32(BigInt(orderData.quantity)); // 数量
-    input.add32(BigInt(Math.floor(orderData.price * 100))); // 价格 (转换为整数)
-    input.add32(getStringValue(orderData.stockSymbol)); // 股票代码
     
-    console.log('🔄 Encrypting order data...');
+    const priceInCents = Math.floor(orderData.price * 100);
+    console.log('📊 Adding price (in cents):', priceInCents);
+    input.add32(BigInt(priceInCents)); // 价格 (转换为整数)
+    
+    const stockSymbolValue = getStringValue(orderData.stockSymbol);
+    console.log('📊 Adding stockSymbol (converted):', stockSymbolValue);
+    input.add32(BigInt(stockSymbolValue)); // 股票代码
+    
+    console.log('✅ Step 2 completed: All data added to encrypted input');
+    
+    console.log('🔄 Step 3: Encrypting data...');
     const encryptedInput = await input.encrypt();
+    console.log('✅ Step 3 completed: Data encrypted successfully');
+    console.log('📊 Encrypted handles count:', encryptedInput.handles.length);
     
-    // 转换 handles 为正确的格式
-    const handles = encryptedInput.handles.map(convertHex);
+    console.log('🔄 Step 4: Converting handles to hex format...');
+    const handles = encryptedInput.handles.map((handle, index) => {
+      const hex = convertHex(handle);
+      console.log(`📊 Handle ${index}: ${hex.substring(0, 10)}... (${hex.length} chars)`);
+      return hex;
+    });
+    
     const proof = `0x${Array.from(encryptedInput.inputProof)
       .map(b => b.toString(16).padStart(2, '0')).join('')}`;
+    console.log('📊 Proof length:', proof.length);
     
-    console.log('✅ Order encrypted successfully');
+    console.log('🎉 Encryption completed successfully!');
+    console.log('📊 Final result:', {
+      handlesCount: handles.length,
+      proofLength: proof.length,
+      handles: handles.map(h => h.substring(0, 10) + '...')
+    });
+    
     return { handles, proof };
   } catch (error) {
-    console.error('❌ Failed to encrypt trading order:', error);
+    console.error('❌ FHE encryption failed:', error);
+    console.error('📊 Error details:', {
+      name: error?.name,
+      message: error?.message,
+      stack: error?.stack,
+      orderData
+    });
     throw error;
   }
 };
@@ -94,23 +134,39 @@ export const decryptTradingData = async (
   orderId: string
 ) => {
   try {
-    console.log('🔄 Decrypting trading data...');
+    console.log('🚀 Starting FHE decryption process...');
+    console.log('📊 Input parameters:', {
+      orderId,
+      contractAddress: CONTRACT_ADDRESS
+    });
     
+    console.log('🔄 Step 1: Fetching encrypted data from contract...');
     const encryptedData = await contract.getOrderEncryptedData(orderId);
+    console.log('✅ Step 1 completed: Encrypted data fetched');
+    console.log('📊 Encrypted data array length:', encryptedData.length);
+    console.log('📊 Encrypted data preview:', encryptedData.map((item, index) => ({
+      index,
+      type: typeof item,
+      length: item?.length || 'N/A'
+    })));
     
-    // 构建 handle-contract 对
+    console.log('🔄 Step 2: Building handle-contract pairs...');
     const handleContractPairs = [
-      { handle: encryptedData[0], contractAddress: contract.target },
-      { handle: encryptedData[1], contractAddress: contract.target },
-      { handle: encryptedData[2], contractAddress: contract.target },
-      { handle: encryptedData[3], contractAddress: contract.target },
-      { handle: encryptedData[4], contractAddress: contract.target }
+      { handle: encryptedData[0], contractAddress: CONTRACT_ADDRESS },
+      { handle: encryptedData[1], contractAddress: CONTRACT_ADDRESS },
+      { handle: encryptedData[2], contractAddress: CONTRACT_ADDRESS },
+      { handle: encryptedData[3], contractAddress: CONTRACT_ADDRESS },
+      { handle: encryptedData[4], contractAddress: CONTRACT_ADDRESS }
     ];
+    console.log('✅ Step 2 completed: Handle-contract pairs built');
+    console.log('📊 Pairs count:', handleContractPairs.length);
     
-    console.log('🔄 Decrypting handles...');
+    console.log('🔄 Step 3: Decrypting handles...');
     const result = await instance.userDecrypt(handleContractPairs);
+    console.log('✅ Step 3 completed: Handles decrypted');
+    console.log('📊 Decryption result keys:', Object.keys(result || {}));
     
-    // 解析解密结果
+    console.log('🔄 Step 4: Parsing decrypted data...');
     const decryptedData = {
       orderId: result[encryptedData[0]]?.toString() || '0',
       orderType: Number(result[encryptedData[1]]) || 0,
@@ -119,10 +175,19 @@ export const decryptTradingData = async (
       stockSymbol: getStringDescription(Number(result[encryptedData[4]]) || 0)
     };
     
-    console.log('✅ Trading data decrypted successfully');
+    console.log('✅ Step 4 completed: Data parsed successfully');
+    console.log('📊 Decrypted data:', decryptedData);
+    
+    console.log('🎉 Decryption completed successfully!');
     return decryptedData;
   } catch (error) {
-    console.error('❌ Failed to decrypt trading data:', error);
+    console.error('❌ FHE decryption failed:', error);
+    console.error('📊 Error details:', {
+      name: error?.name,
+      message: error?.message,
+      stack: error?.stack,
+      orderId
+    });
     throw error;
   }
 };

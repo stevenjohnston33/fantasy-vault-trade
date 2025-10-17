@@ -2,47 +2,18 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { useZamaInstance } from '../hooks/useZamaInstance';
 import { useEthersSigner } from '../hooks/useEthersSigner';
+import { useStockData } from '../hooks/useStockData';
 import { encryptTradingOrder, decryptTradingData, testFHEFunctionality } from '../lib/fhe-trading-utils';
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../config/contract';
 import { Contract } from 'ethers';
-
-// 合约地址和ABI (部署后更新)
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || '0x0000000000000000000000000000000000000000';
-const CONTRACT_ABI = [
-  {
-    "inputs": [
-      {"internalType": "string", "name": "_symbol", "type": "string"},
-      {"internalType": "uint256", "name": "_orderType", "type": "uint256"},
-      {"internalType": "bytes32[5]", "name": "_encryptedData", "type": "bytes32[5]"},
-      {"internalType": "bytes", "name": "_inputProof", "type": "bytes"}
-    ],
-    "name": "placeOrder",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [{"internalType": "uint256", "name": "_orderId", "type": "uint256"}],
-    "name": "getOrderEncryptedData",
-    "outputs": [
-      {"internalType": "bytes32", "name": "", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "", "type": "bytes32"},
-      {"internalType": "bytes32", "name": "", "type": "bytes32"}
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-];
-
-const STOCK_SYMBOLS = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN'];
 
 export default function EncryptedTrading() {
   const { address } = useAccount();
   const { instance, isLoading: fheLoading, error: fheError } = useZamaInstance();
   const { getSigner } = useEthersSigner();
+  const { stocks, loading: stocksLoading, error: stocksError, refetch: refetchStocks } = useStockData();
   
-  const [selectedStock, setSelectedStock] = useState('AAPL');
+  const [selectedStock, setSelectedStock] = useState('');
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
   const [orderType, setOrderType] = useState(1); // 1: Buy, 2: Sell
@@ -106,7 +77,6 @@ export default function EncryptedTrading() {
       // 加密订单数据
       const encryptedData = await encryptTradingOrder(
         instance,
-        CONTRACT_ADDRESS,
         address,
         orderData
       );
@@ -201,7 +171,16 @@ export default function EncryptedTrading() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">🔐 Encrypted Trading Platform</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">🔐 Encrypted Trading Platform</h2>
+          <button
+            onClick={refetchStocks}
+            disabled={stocksLoading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            {stocksLoading ? 'Loading...' : 'Refresh Stocks'}
+          </button>
+        </div>
         
         {/* FHE 状态指示器 */}
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -235,11 +214,17 @@ export default function EncryptedTrading() {
               value={selectedStock}
               onChange={(e) => setSelectedStock(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              disabled={stocksLoading}
             >
-              {STOCK_SYMBOLS.map(symbol => (
-                <option key={symbol} value={symbol}>{symbol}</option>
+              <option value="">Select a stock...</option>
+              {stocks.map(stock => (
+                <option key={stock.symbol} value={stock.symbol}>
+                  {stock.symbol} - {stock.name} (${stock.currentPrice})
+                </option>
               ))}
             </select>
+            {stocksLoading && <p className="text-sm text-gray-500 mt-1">Loading stocks from contract...</p>}
+            {stocksError && <p className="text-sm text-red-500 mt-1">Error loading stocks: {stocksError}</p>}
           </div>
 
           <div>

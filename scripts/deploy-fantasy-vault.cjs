@@ -77,12 +77,65 @@ async function main() {
   fs.writeFileSync(envPath, envContent);
   console.log("✅ .env file updated successfully");
   
-  console.log("🎉 Deployment completed successfully!");
+  // Initialize stock data
+  console.log("📈 Initializing stock data...");
+  const stockData = [
+    {
+      symbol: "AAPL",
+      name: "Apple Inc.",
+      initialPrice: ethers.parseEther("150.00"),
+      totalSupply: 1000000
+    },
+    {
+      symbol: "GOOGL", 
+      name: "Alphabet Inc.",
+      initialPrice: ethers.parseEther("2800.00"),
+      totalSupply: 500000
+    },
+    {
+      symbol: "MSFT",
+      name: "Microsoft Corporation", 
+      initialPrice: ethers.parseEther("300.00"),
+      totalSupply: 800000
+    },
+    {
+      symbol: "TSLA",
+      name: "Tesla Inc.",
+      initialPrice: ethers.parseEther("200.00"),
+      totalSupply: 1200000
+    },
+    {
+      symbol: "AMZN",
+      name: "Amazon.com Inc.",
+      initialPrice: ethers.parseEther("3200.00"),
+      totalSupply: 600000
+    }
+  ];
+  
+  for (const stock of stockData) {
+    try {
+      console.log(`📊 Creating stock: ${stock.symbol} - ${stock.name}`);
+      const tx = await fantasyVault.createStock(
+        stock.symbol,
+        stock.name,
+        stock.initialPrice,
+        stock.totalSupply,
+        "0x" // Empty proof for initialization
+      );
+      await tx.wait();
+      console.log(`✅ Stock ${stock.symbol} created successfully`);
+    } catch (error) {
+      console.error(`❌ Failed to create stock ${stock.symbol}:`, error.message);
+    }
+  }
+  
+  console.log("🎉 Deployment and initialization completed successfully!");
   console.log("📊 Deployment Summary:");
   console.log("  - Contract Address:", contractAddress);
   console.log("  - Network: Sepolia");
   console.log("  - Deployer:", deployer.address);
   console.log("  - Transaction Hash:", fantasyVault.deploymentTransaction().hash);
+  console.log("  - Stocks Initialized:", stockData.length);
 }
 
 main()
