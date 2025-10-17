@@ -4,6 +4,12 @@ pragma solidity ^0.8.24;
 import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 import { euint32, euint64, ebool, FHE } from "@fhevm/solidity/lib/FHE.sol";
 
+/**
+ * @title FantasyVaultTradeV2
+ * @dev A fully homomorphic encryption (FHE) enabled fantasy stock trading platform
+ * @notice This contract implements encrypted trading with Zama FHE SDK
+ * @author Fantasy Vault Team
+ */
 contract FantasyVaultTradeV2 is SepoliaConfig {
     using FHE for *;
     

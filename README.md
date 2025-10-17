@@ -25,7 +25,7 @@ Your Data → FHE Encryption → Blockchain → Decryption (Only You)
 - **Quantum-Safe**: Future-proof encryption technology
 
 ### ⚡ **Next-Gen Trading Engine**
-- **AI-Powered Markets**: Realistic price movements with machine learning
+- **Real Stock Data**: Live market data integration for realistic trading
 - **Microsecond Execution**: Lightning-fast order processing
 - **Smart Liquidity**: Advanced AMM integration for realistic trading
 - **Risk-Free Learning**: Practice with virtual funds, real skills
@@ -86,9 +86,9 @@ fantasy-vault-trade/
 │   ├── components/         # UI components
 │   ├── hooks/             # React hooks
 │   ├── lib/               # Core utilities
-│   │   ├── fhe-utils.ts   # 🧬 FHE encryption
-│   │   ├── contract-utils.ts # ⛓️ Blockchain interaction
-│   │   └── wallet-config.ts  # 💳 Wallet setup
+│   │   ├── fhe-trading-utils.ts # 🧬 FHE encryption
+│   │   ├── ethereum-fix.ts     # 🔧 Ethereum conflicts
+│   │   └── wallet-config.ts    # 💳 Wallet setup
 │   ├── pages/             # Application pages
 │   └── config/            # Environment config
 ├── 🖼️ public/             # Static assets
@@ -122,18 +122,19 @@ npm run dev
 ### ⚙️ **Environment Setup**
 ```bash
 # Copy environment template
-cp .env.example .env.local
+cp .env.example .env
 
 # Edit with your configuration
-nano .env.local
+nano .env
 ```
 
 **Required Environment Variables:**
 ```env
-NEXT_PUBLIC_CHAIN_ID=11155111
-NEXT_PUBLIC_RPC_URL=https://sepolia.infura.io/v3/YOUR_KEY
-NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=YOUR_PROJECT_ID
-NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+PRIVATE_KEY=your_private_key_here
+SEPOLIA_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
+ETHERSCAN_API_KEY=your_etherscan_api_key
+NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_project_id
+NEXT_PUBLIC_CONTRACT_ADDRESS=0xb420eecda221E7BbbdEa4383CFef5eef68c2ddf3
 ```
 
 ## 🎮 User Journey
@@ -147,8 +148,8 @@ graph LR
 ```
 
 ### 🏗️ **Step 2: Create Trading Arena**
-- **Session Setup**: Configure duration, participants, and rules
-- **Stock Selection**: Add stocks with encrypted initial prices
+- **Stock Creation**: Add new stocks with encrypted initial prices
+- **Stock Selection**: Choose from available stocks
 - **Privacy Settings**: Choose your privacy level
 
 ### 📈 **Step 3: Trade in Shadows**
@@ -192,21 +193,22 @@ graph LR
 
 ## 🚀 Deployment
 
-### Vercel Deployment
-1. Fork this repository
-2. Connect to Vercel
-3. Configure environment variables
-4. Deploy automatically
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
-
 ### Smart Contract Deployment
 ```bash
 # Install Hardhat
 npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox
 
 # Deploy to Sepolia
-npx hardhat run scripts/deploy.js --network sepolia
+npx hardhat run scripts/deploy-fantasy-vault.cjs --network sepolia
+```
+
+### Frontend Deployment
+```bash
+# Build for production
+npm run build
+
+# Deploy to Vercel
+npx vercel --prod
 ```
 
 ## 📊 Performance
@@ -222,6 +224,29 @@ npx hardhat run scripts/deploy.js --network sepolia
 - **Bundle Size**: ~500KB gzipped
 - **Load Time**: <3 seconds on 3G
 - **Gas Costs**: ~50,000 gas per transaction
+
+## 🧪 Testing
+
+### Contract Testing
+```bash
+# Run contract tests
+npx hardhat test
+
+# Test contract integration
+npx hardhat run test-contract-integration.cjs --network sepolia
+
+# Test stock loading
+npx hardhat run test-stock-loading.cjs --network sepolia
+```
+
+### Frontend Testing
+```bash
+# Run development server
+npm run dev
+
+# Test FHE functionality
+# Use the "Test FHE" button in the UI
+```
 
 ## 🤝 Contributing
 
@@ -265,6 +290,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] 💳 Multi-wallet integration
 - [x] 📊 Basic trading interface
 - [x] 🏆 Private leaderboards
+- [x] 📈 Real stock data integration
 
 ### 🚀 **Phase 2: Expansion** *(Q2 2024)*
 - [ ] 📱 Mobile-first experience
@@ -304,6 +330,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 [Website](https://fantasy-vault-trade.vercel.app) • [Documentation](https://docs.fantasy-vault-trade.com) • [Discord](https://discord.gg/fantasy-vault-trade) • [Twitter](https://twitter.com/FantasyVaultTrade)
 
-</div># Enhanced privacy features
-# Vercel build fixes
-# Complete FHE integration
+</div>
