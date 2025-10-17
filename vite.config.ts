@@ -11,19 +11,32 @@ export default defineConfig(() => ({
   plugins: [react()],
   define: {
     global: 'globalThis',  // Critical for FHE SDK compatibility
-    'process.env': {} // Prevent ethereum injection conflicts
+    'process.env': {}, // Prevent ethereum injection conflicts
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
   },
   optimizeDeps: {
-    include: ['@zama-fhe/relayer-sdk/bundle'],  // Pre-build FHE SDK
-    exclude: ['@rainbow-me/rainbowkit'],
+    include: [
+      '@zama-fhe/relayer-sdk/bundle',  // Pre-build FHE SDK
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'ua-parser-js',
+      'eventemitter3'
+    ],
+    exclude: [
+      '@rainbow-me/rainbowkit',
+      'ua-parser-js/src/ua-parser.js'
+    ],
     force: true  // Force re-optimization
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "eventemitter3": "eventemitter3"  // Force consistent eventemitter3 version
+      "react/jsx-runtime": "react/jsx-runtime",
+      "react/jsx-dev-runtime": "react/jsx-dev-runtime",
+      "ua-parser-js": "ua-parser-js/dist/ua-parser.min.js"
     },
-    dedupe: ['eventemitter3']  // Dedupe eventemitter3 to avoid conflicts
+    dedupe: ['eventemitter3', 'react', 'react-dom', 'ua-parser-js']  // Dedupe to avoid conflicts
   },
   build: {
     rollupOptions: {

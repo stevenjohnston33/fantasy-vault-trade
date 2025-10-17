@@ -15,10 +15,23 @@ console.log('🔧 Loading Ethereum conflict fix...');
       console.log('📊 Current ethereum provider:', window.ethereum?.isMetaMask ? 'MetaMask' : 'Other');
       console.log('📊 Descriptor configurable:', descriptor?.configurable);
       
-      // If the property is not configurable and already exists, skip redefinition
-      if (descriptor && !descriptor.configurable && window.ethereum) {
-        console.log('✅ Skipping ethereum redefinition to prevent conflicts');
-        return window.ethereum; // Return existing property
+      // If the property already exists and is not configurable, make it configurable first
+      if (window.ethereum && descriptor && !descriptor.configurable) {
+        try {
+          console.log('🔧 Making existing ethereum property configurable...');
+          Object.defineProperty(window, 'ethereum', {
+            ...Object.getOwnPropertyDescriptor(window, 'ethereum'),
+            configurable: true
+          });
+        } catch (e) {
+          console.warn('⚠️ Could not make ethereum configurable:', e);
+          return window.ethereum; // Return existing property
+        }
+      }
+      
+      // Make the new descriptor configurable
+      if (descriptor && !descriptor.configurable) {
+        descriptor.configurable = true;
       }
     }
     
